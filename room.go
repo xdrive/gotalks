@@ -5,11 +5,10 @@ import (
 	"net/http"
 
 	"github.com/gorilla/websocket"
-	"github.com/xdrive/goblueprints/trace"
 )
 
 const (
-	socketBufferSize = 1024
+	socketBufferSize  = 1024
 	messageBufferSize = 256
 )
 
@@ -24,17 +23,14 @@ type room struct {
 	leave chan *client
 
 	clients map[*client]bool
-
-	tracer trace.Tracer
 }
 
 func newRoom() *room {
 	return &room{
 		forward: make(chan []byte),
-		join: make(chan *client),
-		leave: make(chan *client),
+		join:    make(chan *client),
+		leave:   make(chan *client),
 		clients: make(map[*client]bool),
-		tracer: trace.Off(),
 	}
 }
 
@@ -43,16 +39,12 @@ func (r *room) run() {
 		select {
 		case client := <-r.join:
 			r.clients[client] = true
-			r.tracer.Trace("client joind the room")
 		case client := <-r.leave:
 			delete(r.clients, client)
 			close(client.send)
-			r.tracer.Trace("client left the room")
 		case msg := <-r.forward:
-			r.tracer.Trace("Message received: ", string(msg))
 			for client := range r.clients {
 				client.send <- msg
-				r.tracer.Trace(" -- sent to client")
 			}
 		}
 	}
@@ -67,12 +59,12 @@ func (r *room) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 
 	client := &client{
 		socket: socket,
-		send: make(chan []byte, messageBufferSize),
-		room: r,
+		send:   make(chan []byte, messageBufferSize),
+		room:   r,
 	}
 
 	r.join <- client
-	defer func() {r.leave <- client}()
+	defer func() { r.leave <- client }()
 	go client.write()
 	client.read()
 }

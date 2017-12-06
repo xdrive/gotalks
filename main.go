@@ -7,8 +7,7 @@ import (
 	"path/filepath"
 	"sync"
 	"text/template"
-	//	"github.com/xdrive/goblueprints/trace"
-	//	"os"
+
 	"github.com/spf13/viper"
 	"github.com/stretchr/gomniauth"
 	"github.com/stretchr/gomniauth/providers/google"
@@ -53,7 +52,6 @@ func main() {
 	)
 
 	r := newRoom()
-	//r.tracer = trace.New(os.Stdout)
 	http.Handle("/login", &templateHandler{filename: "login.html"})
 	http.HandleFunc("/auth/", loginHandler)
 	http.Handle("/chat", MustAuth(&templateHandler{filename: "chat.html"}))

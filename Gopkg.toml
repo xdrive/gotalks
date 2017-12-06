@@ -1,0 +1,15 @@
+[[constraint]]
+  name = "github.com/gorilla/websocket"
+  version = "1.2.0"
+
+[[constraint]]
+  name = "github.com/spf13/viper"
+  version = "1.0.0"
+
+[[constraint]]
+  branch = "master"
+  name = "github.com/stretchr/gomniauth"
+
+[[constraint]]
+  branch = "master"
+  name = "github.com/stretchr/objx"
