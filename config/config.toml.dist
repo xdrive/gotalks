@@ -1,0 +1,11 @@
+[app]
+host = "localhost"
+port = "8080"
+
+[auth]
+secret_key = "sajfhsdfh2342423"
+
+    [auth.google]
+    client_id = "app-url-goes-here.apps.googleusercontent.com"
+    client_secret = "app-secret-here"
+    callback_url = "/auth/callback/google"
