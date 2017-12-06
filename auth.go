@@ -1,9 +1,10 @@
 package main
 
 import (
+	"fmt"
 	"net/http"
 	"strings"
-	"fmt"
+
 	"github.com/stretchr/gomniauth"
 	"github.com/stretchr/objx"
 )
@@ -89,9 +90,9 @@ func loginHandler(w http.ResponseWriter, r *http.Request) {
 		}).MustBase64()
 
 		http.SetCookie(w, &http.Cookie{
-			Name: "auth",
+			Name:  "auth",
 			Value: authCoockieValue,
-			Path: "/",
+			Path:  "/",
 		})
 
 		w.Header().Set("Location", "/chat")
@@ -99,6 +100,18 @@ func loginHandler(w http.ResponseWriter, r *http.Request) {
 
 	default:
 		w.WriteHeader(http.StatusNotFound)
-		fmt.Fprintf(w,"Auth action %s not supported", action)
+		fmt.Fprintf(w, "Auth action %s not supported", action)
 	}
+}
+
+func logoutHandler(w http.ResponseWriter, r *http.Request) {
+	http.SetCookie(w, &http.Cookie{
+		Name:   "auth",
+		Value:  "",
+		Path:   "/",
+		MaxAge: -1,
+	})
+
+	w.Header().Set("Location", "/chat")
+	w.WriteHeader(http.StatusTemporaryRedirect)
 }
