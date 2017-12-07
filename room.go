@@ -3,6 +3,7 @@ package main
 import (
 	"log"
 	"net/http"
+	"sync"
 
 	"github.com/stretchr/objx"
 
@@ -20,35 +21,22 @@ type room struct {
 	// incoming messages which are to be forwarded to all the clients
 	forward chan *message
 
-	join chan *client
-
-	leave chan *client
-
-	clients map[*client]bool
+	clients sync.Map
 }
 
 func newRoom() *room {
+
 	return &room{
 		forward: make(chan *message),
-		join:    make(chan *client),
-		leave:   make(chan *client),
-		clients: make(map[*client]bool),
 	}
 }
 
 func (r *room) run() {
-	for {
-		select {
-		case client := <-r.join:
-			r.clients[client] = true
-		case client := <-r.leave:
-			delete(r.clients, client)
-			close(client.send)
-		case msg := <-r.forward:
-			for client := range r.clients {
-				client.send <- msg
-			}
-		}
+	for msg := range r.forward {
+		r.clients.Range(func(k, v interface{}) bool {
+			k.(*client).send <- msg
+			return true
+		})
 	}
 }
 
@@ -72,8 +60,16 @@ func (r *room) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 		userData: objx.MustFromBase64(authCookie.Value),
 	}
 
-	r.join <- client
-	defer func() { r.leave <- client }()
+	r.Join(client)
+	defer func() { r.Leave(client) }()
 	go client.write()
 	client.read()
+}
+
+func (r *room) Join(c *client) {
+	r.clients.Store(c, true)
+}
+
+func (r *room) Leave(c *client) {
+	r.clients.Delete(c)
 }

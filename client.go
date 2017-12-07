@@ -11,7 +11,8 @@ type client struct {
 	// channel to send messages
 	send chan *message
 	// room in which client is chatting
-	room     *room
+	room *room
+	// user details
 	userData map[string]interface{}
 }
 
